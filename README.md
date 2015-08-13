@@ -1,6 +1,13 @@
 xUnit Testing Framework for D
 =============================
 
+Note:
+Forked from linkrope/dunit to try to revise it and it's still in development.
+So it can't be used now.
+
+Here is the original README
+=============================
+
 [![Build Status](https://travis-ci.org/linkrope/dunit.svg?branch=master)](https://travis-ci.org/linkrope/dunit)
 
 This is a simple implementation of the xUnit Testing Framework
