@@ -25,8 +25,15 @@ class AssertException : Exception {
     }
 }
 
-class Assert {
+class Assert : Thread {
+protected:
+    abstract void run();
+
 public:
+    this() {
+        super(&run);
+    }
+
 static:
     /**
      * Asserts that a condition is true.
