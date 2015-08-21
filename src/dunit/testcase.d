@@ -19,13 +19,18 @@ private:
     }
 
 protected:
+    void before() { }
+    void after() { }
+    void setUp() { }
+    void tearDown() { }
+
     override void run() {
         if (beforeTest) {
             beforeTest = false;
             try {
-                setUpBeforeClass();
+                before();
             } catch (Exception e) {
-                result.addError("setUpBeforeClass", e);
+                result.addError("before", e);
                 return;
             }
         }
@@ -43,17 +48,14 @@ protected:
                 setUp();
             } catch (Exception e) {
                 result.addError(method, e);
+                continue;
             }
         }
     }
+
 public:
     this() {
         result.setTestClass(this.classinfo);
     }
-
-    void setUpBeforeClass() { }
-    void tearDownAfterClass() { }
-    void setUp() {  }
-    void tearDown() {  }
 }
 

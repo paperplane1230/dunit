@@ -423,7 +423,8 @@ static:
     void assertThrow(T : Throwable = Exception)(in void function() func,
             string msg = null, string file = __FILE__, size_t line = __LINE__){
         TypeInfo_Class expected = T.classinfo;
-        TypeInfo_Class actual = collectException(func()).classinfo;
+        Exception exception = collectException(func());
+        TypeInfo_Class actual = exception.classinfo;
         TypeInfo_Class type = actual;
         bool equal = false;
 
@@ -434,7 +435,7 @@ static:
             }
             type = type.base;
         }
-        string actualMsg = collectExceptionMsg(func());
+        string actualMsg = exception.msg;
 
         if (equal && (msg.empty || msg.indexOf(actualMsg) >= 0)) {
             return;
