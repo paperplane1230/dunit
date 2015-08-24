@@ -7,12 +7,21 @@ private:
     TypeInfo_Class testClass;
 
     uint sumCount = 0;
-    uint failureCount = 0;
-    uint errorCount = 0;
-
 public:
-    void setTestClass(TypeInfo_Class tested) {
+    this(TypeInfo_Class tested) {
         testClass = tested;
+    }
+
+    void addError(in string error, Exception e) {
+        errorTests[error] = e;
+    }
+
+    void addFailure(in string failure, Exception e) {
+        failureTests[failure] = e;
+    }
+
+    void setSum(uint sum) {
+        sumCount = sum;
     }
 }
 
