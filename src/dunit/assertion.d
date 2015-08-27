@@ -25,15 +25,19 @@ class AssertException : Exception {
     }
 }
 
+void forTest() {
+    while (true) {
+        ;
+    }
+}
+
 class Assert : Thread {
 protected:
     abstract void run();
-
 public:
     this() {
         super(&run);
     }
-
 static:
     /**
      * Asserts that a condition is true.
@@ -416,6 +420,30 @@ static:
     }
 
     /**
+     * Asserts that the function ends within specific time(500 ms on default).
+     * Throws: AssertException otherwise.
+     */
+    void assertWithin(in void function() func, Duration timeout = 500.msecs,
+            lazy string msg = null,
+            string file = __FILE__, size_t line = __LINE__) {
+        Thread task = new Thread(func).start();
+
+        Thread.sleep(timeout);
+        if (task.isRunning()) {
+            thread_detachInstance(task);
+            fail(msg, file, line);
+        }
+        task.join();
+    }
+
+    unittest {
+        assertWithin({ return; });
+        assertEquals("timed out", collectExceptionMsg!AssertException(
+                assertWithin(&forTest,
+                    dur!("seconds")(2), "timed out")));
+    }
+
+    /**
      * Asserts that the function throws the expected exception with specific
      *  messages 
      * Throws: AssertException otherwise
@@ -449,6 +477,7 @@ static:
     }
 
     unittest {
+        assertThrow({ throw new Exception(""); });
         assertEquals(`expected: an instance of (dunit.assertion.AssertException) `
                 `with message containing "example" but was: (object.Exception) `
                 `with message "test"`,

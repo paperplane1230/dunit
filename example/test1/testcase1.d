@@ -26,7 +26,11 @@ private:
     static void throwExampleException() {
         throw new ExampleException("an example");
     }
-
+    static void loop() {
+        while (true) {
+            ;
+        }
+    }
 protected:
     override void before() {
         debug writeln("before()");
@@ -43,7 +47,6 @@ protected:
     override void tearDown() {
         debug writeln("tearDown()");
     }
-
 public:
     void testResult() {
         assertTrue(false);
@@ -88,6 +91,10 @@ public:
 
     void testExceptionMessage() {
         assertThrow!ExampleException(&throwExampleException, "two");
+    }
+
+    void testTimeout() {
+        assertWithin(&loop, 2000.msecs, "timed out");
     }
 }
 

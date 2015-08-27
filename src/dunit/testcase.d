@@ -69,5 +69,8 @@ protected:
         }
     }
 public:
+    TestResult getResult() {
+        return result;
+    }
 }
 

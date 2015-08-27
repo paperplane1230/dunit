@@ -17,7 +17,6 @@ private:
         Thread.sleep(msecs(100));
         done = true;
     }
-
 public:
     void setUp() {
         done = false;

@@ -7,7 +7,6 @@ import std.algorithm;
 class TestSuite {
 private:
     TypeInfo_Class[] tests;
-
 public:
     TypeInfo_Class[] getTests() {
         return tests;
