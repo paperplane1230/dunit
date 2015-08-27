@@ -20,7 +20,7 @@ protected:
     void setUp() { }
     void tearDown() { }
 
-    override void run() {
+    final override void run() {
         try {
             before();
         } catch (Exception e) {
