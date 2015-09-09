@@ -1,43 +1,37 @@
 module dunit.testsuite;
 
 import dunit.testcase;
-
-import std.algorithm;
+import dunit.testresult;
 
 class TestSuite {
 private:
-    TypeInfo_Class[] tests;
+    TestResult[] results;
 public:
-    TypeInfo_Class[] getTests() {
-        return tests;
+    TestResult[] getResults() {
+        return results;
     }
 
     void addTest(TestSuite suite) {
-        foreach (testcase; suite.getTests()) {
-            if (find(tests, testClass).length == 0) {
-                tests ~= testcase;
+        foreach (result; suite.getResults()) {
+            foreach (thisResult; results) {
+                if (result.getClass().name == thisResult.getClass().name) {
+                    continue;
+                }
             }
+            results ~= result;
         }
     }
 
-    void addTestSuite(TypeInfo_Class testClass) {
-        TypeInfo_Class type = testClass;
-        bool isTestCase = false;
+    void addTestSuite(T : TestCase)() {
+        T test = new T();
 
-        while (type !is null) {
-            if (type == TestCase.classinfo) {
-                isTestCase = true;
-                break;
+        foreach (result; results) {
+            if (result.getClass().name == typeid(test)) {
+                return;
             }
-            type = type.base;
         }
-        if (!isTestCase) {
-            throw new Exception("The parameter of addTestSuite must be a class"
-                            "derived from TestCase.");
-        }
-        if (find(tests, testClass).length == 0) {
-            tests ~= testClass;
-        }
+        test.run();
+        results ~= test.getResult();
     }
 }
 

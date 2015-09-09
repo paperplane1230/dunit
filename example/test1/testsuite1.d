@@ -5,10 +5,10 @@ import dunit.testsuite;
 
 class TestSuite1 {
 public:
-    static void TestSuite suite() {
+    static TestSuite suite() {
         TestSuite suite = new TestSuite();
 
-        suite.addTestSuite(testcase1.classinfo);
+        suite.addTestSuite!TestCase1();
         return suite;
     }
 }

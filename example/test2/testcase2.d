@@ -18,15 +18,13 @@ private:
         done = true;
     }
 public:
-    void setUp() {
+    override void setUp() {
         done = false;
         thread = new Thread(&threadFunction);
     }
-
-    void tearDown() {
+    override void tearDown() {
         thread.join();
     }
-
     void test() {
         assertFalse(done);
         thread.start();

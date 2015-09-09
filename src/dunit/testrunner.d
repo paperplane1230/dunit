@@ -6,22 +6,17 @@ import dunit.testresult;
 import dunit.testreport;
 
 import core.time;
+import core.thread;
 
 class TestRunner {
 public:
-    static void run(TestSuite suite, string args = null) {
-        Thread[] tasks;
+    static void run(TestSuite suite, string[] args = null) {
         TestResult[] results;
         TickDuration startTime = TickDuration.currSystemTick();
 
         foreach (testcase; suite.getTests()) {
             auto test = cast(testcase)Object.factory(testcase.name);
 
-            tasks ~= test;
-            test.start();
-        }
-        foreach (test; tasks) {
-            test.join();
             results ~= test.getResult();
         }
         Duration elapsedTime
@@ -30,7 +25,7 @@ public:
         TestReport.print(results, elapsedTime);
     }
 
-    static void run(TypeInfo_Class tested, string args = null) {
+    static void run(TypeInfo_Class tested, string[] args = null) {
         TestSuite suite = new TestSuite();
 
         suite.addTest(tested);

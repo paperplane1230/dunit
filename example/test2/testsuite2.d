@@ -5,10 +5,10 @@ import example.test2.testcase2;
 
 class TestSuite2 {
 public:
-    static void TestSuite suite() {
+    static TestSuite suite() {
         TestSuite suite = new TestSuite();
 
-        suite.addTestSuite(testcase2.classinfo);
+        suite.addTestSuite!TestCase2();
         return suite;
     }
 }

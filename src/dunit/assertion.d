@@ -10,9 +10,9 @@ import std.conv;
 import std.range;
 import std.string;
 import std.traits;
+import std.exception;
 
 version (unittest) {
-    import std.exception;
     import std.stdio;
 }
 
@@ -31,13 +31,7 @@ void forTest() {
     }
 }
 
-class Assert : Thread {
-protected:
-    abstract void run();
-public:
-    this() {
-        super(&run);
-    }
+class Assert {
 static:
     /**
      * Asserts that a condition is true.

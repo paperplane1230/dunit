@@ -2,8 +2,8 @@
 
 module example.example;
 
-import test1.testsuite1;
-import test2.testsuite2;
+import example.test1.testsuite1;
+import example.test2.testsuite2;
 import dunit.testsuite;
 import dunit.testrunner;
 
