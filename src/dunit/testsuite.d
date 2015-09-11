@@ -3,6 +3,10 @@ module dunit.testsuite;
 import dunit.testcase;
 import dunit.testresult;
 
+debug {
+    import std.stdio;
+}
+
 class TestSuite {
 private:
     TestResult[] results;
@@ -23,15 +27,12 @@ public:
     }
 
     void addTestSuite(T : TestCase)() {
-        T test = new T();
-
         foreach (result; results) {
-            if (result.getClass().name == typeid(test)) {
+            if (result.getClass().name == typeid(T).name) {
                 return;
             }
         }
-        test.run();
-        results ~= test.getResult();
+        results ~= TestCase.run!T();
     }
 }
 

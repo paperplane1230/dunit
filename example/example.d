@@ -7,6 +7,10 @@ import example.test2.testsuite2;
 import dunit.testsuite;
 import dunit.testrunner;
 
+debug {
+    import std.stdio;
+}
+
 TestSuite suite()
 {
     TestSuite suite = new TestSuite();

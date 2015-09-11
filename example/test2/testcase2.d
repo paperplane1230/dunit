@@ -25,10 +25,15 @@ public:
     override void tearDown() {
         thread.join();
     }
+
     void test() {
         assertFalse(done);
         thread.start();
         assertEventually({ return done; });
+    }
+    void testError() {
+        int[] array = [2, 3];
+        int tmp = array[3];
     }
 }
 

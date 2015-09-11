@@ -4,15 +4,16 @@ import dunit.testresult;
 
 import core.time;
 import std.string;
+import std.stdio;
 
 class TestReport {
 private:
-    uint printContent(in Exception[string] results, in string content) {
+    static void printContent(Throwable[string] results, in string content) {
         // print a blank line
         writeln("");
         size_t sum = results.length;
-        string pre = "There " ~ sum == 1 ? "was " : "were ";
-        string post = " " ~ content  ~ sum == 1 ? "" : "s" ~ ":";
+        string pre = "There " ~ (sum == 1 ? "was " : "were ");
+        string post = " " ~ content  ~ (sum == 1 ? "" : "s" ~ ":");
 
         writeln(pre, sum, post);
         uint num = 0;
@@ -20,37 +21,45 @@ private:
         foreach (name, exception; results) {
             writeln(++num, ") ", name);
             string msg = exception.toString();
-            int index = indexOf(msg, '-');
+            ptrdiff_t index = indexOf(msg, '-');
 
             // print content of the exception
-            writeln(msg[0..index]);
+            writeln(msg[0..index-1]);
         }
-        writeln("----------------------------------------------");
+        writeln("------------------------------------------------------------");
     }
 public:
-    static void print(TestResult[] results, Duration elapsedTime) {
-        Exception[string] errors;
-        Exception[string] failures;
+    static void print(TestResult[] results) {
+        Duration elapsedTime;
+        Throwable[string] errors;
+        Throwable[string] failures;
+        string resultStr;
         uint sum = 0;
-        uint errorSum = 0;
-        uint failureSum = 0;
 
         foreach (result; results) {
-            errors ~= result.getErrors();
-            failures ~= result.getFailures();
+            foreach (str, e; result.getErrors()) {
+                errors[str] = e;
+            }
+            foreach (str, e; result.getFailures()) {
+                failures[str] = e;
+            }
             sum += result.getSum();
+            elapsedTime += result.getTime();
+            resultStr ~= result.getSign();
         }
+        writeln(resultStr);
         if (errors.length != 0) {
-            errorSum = printContent(errors, "error");
+            printContent(errors, "error");
         }
         if (failures.length != 0) {
-            errorSum = printContent(failures, "failure");
+            printContent(failures, "failure");
         }
         writeln("");
-        writefln("Tests run: %d, failures: %d, errors: %d.",
-                sum, failureSum, errorSum);
-        writeln("Time: ", elapsedTime);
-        string res = errorSum == 0 && failureSum == 0 ? "Ok!" : "Not ok!";
+        writefln("Test(s) run: %d, failure(s): %d, error(s): %d.",
+                sum, failures.length, errors.length);
+        writeln("Time: ", elapsedTime, "\n");
+        string res = (errors.length == 0 && failures.length == 0)
+                    ? "Ok!!" : "Not ok!!";
 
         writeln(res);
     }

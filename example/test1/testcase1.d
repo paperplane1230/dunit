@@ -31,7 +31,7 @@ private:
             ;
         }
     }
-protected:
+public:
     override void before() {
         debug writeln("before()");
     }
@@ -44,7 +44,7 @@ protected:
     override void tearDown() {
         debug writeln("tearDown()");
     }
-public:
+
     void testResult() {
         assertTrue(false);
     }
