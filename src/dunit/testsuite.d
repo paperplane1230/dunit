@@ -10,7 +10,11 @@ debug {
 class TestSuite {
 private:
     TestResult[] results;
+    string name;
 public:
+    this(string name = null) {
+        this.name = name;
+    }
     TestResult[] getResults() {
         return results;
     }
@@ -32,7 +36,7 @@ public:
                 return;
             }
         }
-        results ~= TestCase.run!T();
+        results ~= TestCase.run!T(name);
     }
 }
 

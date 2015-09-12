@@ -6,7 +6,7 @@ import example.test2.testcase2;
 class TestSuite2 {
 public:
     static TestSuite suite() {
-        TestSuite suite = new TestSuite();
+        TestSuite suite = new TestSuite("TestSuite2");
 
         suite.addTestSuite!TestCase2();
         return suite;

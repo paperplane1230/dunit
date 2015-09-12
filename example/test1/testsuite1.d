@@ -6,7 +6,7 @@ import dunit.testsuite;
 class TestSuite1 {
 public:
     static TestSuite suite() {
-        TestSuite suite = new TestSuite();
+        TestSuite suite = new TestSuite("TestSuite1");
 
         suite.addTestSuite!TestCase1();
         return suite;

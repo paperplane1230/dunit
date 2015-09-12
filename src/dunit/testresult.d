@@ -6,40 +6,69 @@ class TestResult {
 private:
     Throwable[string] failureTests;
     Throwable[string] errorTests;
+    Duration[string] elapsedTime;
+    string[] caseNames;
 
     TypeInfo_Class testClass;
-    Duration elapsedTime;
+    Duration totalTime;
+    string suiteName;
     string sign;
-    uint sumCount = 0;
+
+    void setNameAndTime(string name, Duration time) {
+        caseNames ~= name;
+        elapsedTime[name] = time;
+        totalTime += time;
+    }
 public:
     this(TypeInfo_Class tested) {
         testClass = tested;
     }
 
-    void addError(in string error, Throwable e) {
-        errorTests[testClass.name ~ "." ~ error] = e;
+    void addTest(string test, Duration time = 0.msecs) {
+        string name = testClass.name ~ "." ~ test;
+
+        setNameAndTime(name, time);
+        sign ~= ".";
     }
-    void addFailure(in string failure, Throwable e) {
-        failureTests[testClass.name ~ "." ~ failure] = e;
+    void addError(string error, Throwable e, Duration time = 0.msecs) {
+        string name = testClass.name ~ "." ~ error;
+
+        setNameAndTime(name, time);
+        errorTests[name] = e;
+        sign ~= "E";
     }
-    void addSign(in string s) {
-        sign ~= s;
+    void addFailure(string failure, Throwable e, Duration time = 0.msecs) {
+        string name = testClass.name ~ "." ~ failure;
+
+        setNameAndTime(name, time);
+        failureTests[name] = e;
+        sign ~= "F";
     }
 
-    void setTime(Duration time) {
-        elapsedTime = time;
+    void setTime(string caseName, Duration time) {
+        string name = testClass.name ~ "." ~ caseName;
+
+        totalTime -= elapsedTime[name];
+        elapsedTime[caseName] = time;
+        totalTime += time;
     }
-    Duration getTime() {
-        return elapsedTime;
+    Duration getTime(string caseName) {
+        return elapsedTime[caseName];
     }
-    void setSum(uint sum) {
-        sumCount = sum;
+    Duration getTotalTime() {
+        return totalTime;
     }
-    uint getSum() {
-        return sumCount;
+    ulong getSum() {
+        return caseNames.length;
     }
     string getSign() {
         return sign;
+    }
+    string getSuiteName() {
+        return suiteName;
+    }
+    void setSuiteName(string name) {
+        suiteName = name;
     }
     Throwable[string] getFailures() {
         return failureTests;

@@ -29,9 +29,11 @@ protected:
     void setUp() { }
     void tearDown() { }
 public:
-    final static TestResult run(alias T)() {
+    final static TestResult run(alias T)(string name) {
         T test = new T();
         TestResult result = new TestResult(typeid(T));
+
+        result.setSuiteName(name);
         TickDuration startTime = TickDuration.currSystemTick();
 
         try {
@@ -39,20 +41,20 @@ public:
         } catch (AssertException e) {
             Duration elapsedTime
                 = cast(Duration)(TickDuration.currSystemTick() - startTime);
-            result.addFailure("before", e);
-            result.setTime(elapsedTime);
-            result.addSign("F");
+
+            result.addFailure("before", e, elapsedTime);
             return result;
         } catch (Throwable e) {
             Duration elapsedTime
                 = cast(Duration)(TickDuration.currSystemTick() - startTime);
-            result.addError("before", e);
-            result.setTime(elapsedTime);
-            result.addSign("E");
+
+            result.addError("before", e, elapsedTime);
             return result;
         }
-        uint sumTests = 0;
+        Duration elapsedTime
+            = cast(Duration)(TickDuration.currSystemTick() - startTime);
 
+        result.addTest("before", elapsedTime);
         foreach (method; __traits(derivedMembers, T)) {
             // make sure method is a function, not a field
             static if (__traits(getProtection,
@@ -66,43 +68,45 @@ public:
                             .stringof != "void") {
                     continue;
                 }
-                ++sumTests;
+                startTime = TickDuration.currSystemTick();
                 try {
                     test.setUp();
                 } catch (AssertException e) {
-                    result.addFailure("setUp", e);
-                    result.addSign("F");
+                    elapsedTime = cast(Duration)
+                                    (TickDuration.currSystemTick() - startTime);
+                    result.addFailure(method, e, elapsedTime);
                     continue;
                 } catch (Throwable e) {
-                    result.addError("setUp", e);
-                    result.addSign("E");
+                    elapsedTime = cast(Duration)
+                                    (TickDuration.currSystemTick() - startTime);
+                    result.addError(method, e, elapsedTime);
                     continue;
                 }
                 try {
                     // invoke the method
                     __traits(getMember, test, method)();
-                    result.addSign(".");
+                    result.addTest(method);
                 } catch (AssertException e) {
                     result.addFailure(method, e);
-                    result.addSign("F");
                 } catch (Throwable e) {
                     result.addError(method, e);
-                    result.addSign("E");
                 } finally {
                     runRemaining(&test.tearDown);
+                    elapsedTime = cast(Duration)
+                                    (TickDuration.currSystemTick() - startTime);
+                    result.setTime(method, elapsedTime);
                 }
             }
         }
-        result.setSum(sumTests);
+        startTime = TickDuration.currSystemTick();
         try {
             test.after();
         } catch (Throwable e) {
             // leave it here, do nothing
             ;
         }
-        Duration elapsedTime
-            = cast(Duration)(TickDuration.currSystemTick() - startTime);
-        result.setTime(elapsedTime);
+        elapsedTime = cast(Duration)(TickDuration.currSystemTick() - startTime);
+        result.addTest("after", elapsedTime);
         return result;
     }
 }
