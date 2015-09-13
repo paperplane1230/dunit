@@ -1,5 +1,6 @@
 module dunit.testrunner;
 
+import dunit.test;
 import dunit.testsuite;
 import dunit.testcase;
 import dunit.testresult;
@@ -10,7 +11,7 @@ import std.stdio;
 
 class TestRunner {
 private:
-    static void print(string[string] reports, TestResult[] results) {
+    static void print(string[string] reports, Test[] tests) {
         bool print = true;
 
         if (reports["xml"] !is null) {
@@ -26,7 +27,7 @@ private:
             print = false;
         }
         if (print) {
-            TestReport.print(results);
+            TestReport.print(tests);
         }
     }
 
@@ -61,12 +62,9 @@ public:
         if (reports == null) {
             return;
         }
-        TestResult[] results;
+        Test[] tests = suite.getTests();
 
-        foreach (result; suite.getResults()) {
-            results ~= result;
-        }
-        print(reports, results);
+        print(reports, tests);
     }
 
     static void run(T : TestCase)(string[] args = null) {
@@ -75,13 +73,10 @@ public:
         if (reports == null) {
             return;
         }
-        T test = new T();
+        TestSuite suite = new TestSuite();
 
-        test.run!T();
-        TestResult[] results;
-
-        results ~= test.getResult();
-        print(reports, results);
+        suite.addTestSuite!T();
+        print(reports, suite);
     }
 }
 

@@ -11,7 +11,6 @@ private:
 
     TypeInfo_Class testClass;
     Duration totalTime;
-    string suiteName;
     string sign;
 
     void setNameAndTime(string name, Duration time) {
@@ -63,12 +62,6 @@ public:
     }
     string getSign() {
         return sign;
-    }
-    string getSuiteName() {
-        return suiteName;
-    }
-    void setSuiteName(string name) {
-        suiteName = name;
     }
     Throwable[string] getFailures() {
         return failureTests;

@@ -1,5 +1,6 @@
 module dunit.testcase;
 
+import dunit.test;
 import dunit.assertion;
 import dunit.testresult;
 
@@ -12,10 +13,12 @@ bool startWith(in string source, in string target)
         && source[0..target.length] == target;
 }
 
-class TestCase : Assert {
+class TestCase : Assert, Test {
 private:
+    TestResult result;
+
     // do tearDown because we can't put catch inside finally block
-    static void runRemaining(void delegate() func) {
+    void runRemaining(void delegate() func) {
         try {
             func();
         } catch (Throwable e) {
@@ -29,11 +32,14 @@ protected:
     void setUp() { }
     void tearDown() { }
 public:
-    final static TestResult run(alias T)(string name) {
-        T test = new T();
-        TestResult result = new TestResult(typeid(T));
+    final override TestResult getResult() {
+        return result;
+    }
 
-        result.setSuiteName(name);
+    final void run(alias T)() {
+        T test = new T();
+
+        result = new TestResult(typeid(T));
         TickDuration startTime = TickDuration.currSystemTick();
 
         try {
@@ -43,13 +49,13 @@ public:
                 = cast(Duration)(TickDuration.currSystemTick() - startTime);
 
             result.addFailure("before", e, elapsedTime);
-            return result;
+            return;
         } catch (Throwable e) {
             Duration elapsedTime
                 = cast(Duration)(TickDuration.currSystemTick() - startTime);
 
             result.addError("before", e, elapsedTime);
-            return result;
+            return;
         }
         Duration elapsedTime
             = cast(Duration)(TickDuration.currSystemTick() - startTime);
@@ -107,7 +113,6 @@ public:
         }
         elapsedTime = cast(Duration)(TickDuration.currSystemTick() - startTime);
         result.addTest("after", elapsedTime);
-        return result;
     }
 }
 

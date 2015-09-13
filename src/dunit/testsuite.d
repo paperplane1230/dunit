@@ -1,5 +1,6 @@
 module dunit.testsuite;
 
+import dunit.test;
 import dunit.testcase;
 import dunit.testresult;
 
@@ -7,36 +8,47 @@ debug {
     import std.stdio;
 }
 
-class TestSuite {
+class TestSuite : Test {
 private:
-    TestResult[] results;
+    Test[] tests;
     string name;
 public:
     this(string name = null) {
         this.name = name;
     }
-    TestResult[] getResults() {
-        return results;
+
+    Test[] getTests() {
+        return tests;
+    }
+    final override TestResult getResult() {
+        return null;
+    }
+    string getName() {
+        return name;
     }
 
     void addTest(TestSuite suite) {
-        foreach (result; suite.getResults()) {
-            foreach (thisResult; results) {
-                if (result.getClass().name == thisResult.getClass().name) {
-                    continue;
-                }
-            }
-            results ~= result;
+        if (this == suite) {
+            return;
         }
-    }
-
-    void addTestSuite(T : TestCase)() {
-        foreach (result; results) {
-            if (result.getClass().name == typeid(T).name) {
+        foreach (test; tests) {
+            if (test == suite) {
                 return;
             }
         }
-        results ~= TestCase.run!T(name);
+        tests ~= suite;
+    }
+
+    void addTestSuite(T : TestCase)() {
+        foreach (test; tests) {
+            if (test.getResult().getClass().name == typeid(T).name) {
+                return;
+            }
+        }
+        T test = new T();
+
+        test.run!T();
+        tests ~= test;
     }
 }
 
