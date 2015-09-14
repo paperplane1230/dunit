@@ -20,8 +20,7 @@ Test Results
 ------------
 
 Test results are reported while the tests are run. A "progress bar" is written
-with a `.` for each passed test, an `F` for each failure, an `E` for each error,
-and an `S` for each skipped test.
+with a `.` for each passed test, an `F` for each failure and an `E` for each error.
 
 In addition, an XML, CSV or HTML test report is available.
 
