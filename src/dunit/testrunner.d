@@ -25,7 +25,9 @@ private:
             report.print();
         }
         if (reports["html"] !is null) {
-            /* HtmlReport.print(results, reports["html"]); */
+            HtmlReport report = new HtmlReport(reports["html"], suite);
+
+            report.print();
         }
         TestReport report = new TestReport(suite);
 

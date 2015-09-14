@@ -86,7 +86,7 @@ static:
 
     unittest {
         assertEquals("foo", "foo");
-        assertEquals("expected: <ba<r>> but was: <ba<z>>",
+        assertEquals("expected: {ba{r}} but was: {ba{z}}",
                 collectExceptionMsg!AssertException(assertEquals("bar", "baz")));
     }
 
@@ -101,13 +101,13 @@ static:
         }
         string header = (msg.empty) ? null : msg ~ "; ";
 
-        fail(header ~ format("expected: <%s> but was: <%s>", expected, actual),
+        fail(header ~ format("expected: {%s} but was: {%s}", expected, actual),
                 file, line);
     }
 
     unittest {
         assertEquals(42, 42);
-        assertEquals("expected: <42> but was: <24>",
+        assertEquals("expected: {42} but was: {24}",
                 collectExceptionMsg!AssertException(assertEquals(42, 24)));
         assertEquals(42.0, 42.0);
         Object foo = new Object();
@@ -115,7 +115,7 @@ static:
 
         assertEquals(foo, foo);
         assertEquals(bar, bar);
-        assertEquals("expected: <object.Object> but was: <null>",
+        assertEquals("expected: {object.Object} but was: {null}",
                 collectExceptionMsg!AssertException(assertEquals(foo, bar)));
     }
 
@@ -157,7 +157,7 @@ static:
         double[string] expected = ["foo": 1, "bar": 2];
 
         assertArrayEquals(expected, ["foo": 1, "bar": 2]);
-        assertEquals(`mismatch at key "foo"; expected: <1> but was: <2>`,
+        assertEquals(`mismatch at key "foo"; expected: {1} but was: {2}`,
                 collectExceptionMsg!AssertException(
                     assertArrayEquals(expected, ["foo": 2])));
         assertEquals(`key mismatch; difference: "bar"`,
@@ -184,11 +184,11 @@ static:
             }
             assertEmpty(expected,
                     header ~ format("length mismatch at index %s; ", index)
-                    ~ format("expected: <%s> but was: empty", expected.front),
+                    ~ format("expected: {%s} but was: empty", expected.front),
                     file, line);
             assertEmpty(actual,
                     header ~ format("length mismatch at index %s; ", index)
-                    ~ format("expected: empty but was: <%s>", actual.front),
+                    ~ format("expected: empty but was: {%s}", actual.front),
                     file, line);
         }
 
@@ -196,16 +196,16 @@ static:
         double[] expected = [0, 1];
 
         assertRangeEquals(expected, [0, 1]);
-        assertEquals("mismatch at index 1; expected: <1> but was: <1.2>",
+        assertEquals("mismatch at index 1; expected: {1} but was: {1.2}",
                 collectExceptionMsg!AssertException(
                     assertRangeEquals(expected, [0, 1.2, 3])));
-        assertEquals("length mismatch at index 1; expected: <1> but was: empty",
+        assertEquals("length mismatch at index 1; expected: {1} but was: empty",
                 collectExceptionMsg!AssertException(
                     assertRangeEquals(expected, [0])));
-        assertEquals("length mismatch at index 2; expected: empty but was: <2>",
+        assertEquals("length mismatch at index 2; expected: empty but was: {2}",
                 collectExceptionMsg!AssertException(
                     assertRangeEquals(expected, [0, 1, 2])));
-        assertEquals("mismatch at index 2; expected: <r> but was: <z>",
+        assertEquals("mismatch at index 2; expected: {r} but was: {z}",
                 collectExceptionMsg!AssertException(
                     assertArrayEquals("bar", "baz")));
     }
@@ -297,7 +297,7 @@ static:
         }
         string header = (msg.empty) ? null : msg ~ "; ";
 
-        fail(header ~ format("expected same: <%s> was not: <%s>",
+        fail(header ~ format("expected same: {%s} was not: {%s}",
                     expected, actual), file, line);
     }
 
@@ -306,7 +306,7 @@ static:
         Object bar = new Object();
 
         assertSame(foo, foo);
-        assertEquals("expected same: <object.Object> was not: <object.Object>",
+        assertEquals("expected same: {object.Object} was not: {object.Object}",
                 collectExceptionMsg!AssertException(assertSame(foo, bar)));
     }
 
@@ -451,7 +451,7 @@ static:
         bool equal = false;
 
         while (type !is null) {
-            if (type == expected) {
+            if (type.name == expected.name) {
                 equal = true;
                 break;
             }
@@ -459,12 +459,12 @@ static:
         }
         string actualMsg = exception.msg;
 
-        if (equal && (msg.empty || msg.indexOf(actualMsg) >= 0)) {
+        if (equal && (msg.empty || actualMsg.indexOf(msg) >= 0)) {
             return;
         }
-        string result = "expected: an instance of (" ~ expected.name ~ ")"
+        string result = "expected:\nan instance of (" ~ expected.name ~ ")"
             ~ (msg !is null ? ` with message containing "` ~ msg ~ `"` : "")
-            ~ ` but was: (` ~ actual.name ~ ")"
+            ~ "\nbut was:\n(" ~ actual.name ~ ")"
             ~ (msg !is null ? ` with message "` ~ actualMsg ~ `"` : "");
 
         fail(result, file, line);
@@ -472,8 +472,10 @@ static:
 
     unittest {
         assertThrow({ throw new Exception(""); });
-        assertEquals(`expected: an instance of (dunit.assertion.AssertException) `
-                `with message containing "example" but was: (object.Exception) `
+        assertEquals("expected:\nan instance of "
+                `(dunit.assertion.AssertException) `
+                "with message containing \"example\"\n"
+                "but was:\n(object.Exception) "
                 `with message "test"`,
                 collectExceptionMsg(assertThrow!AssertException(
                         { throw new Exception("test"); }, "example")));

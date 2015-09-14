@@ -233,6 +233,8 @@ private:
                 testsuite ~= "\"\"\n";
                 generate((cast(TestSuite)test).getTests(), testsuite);
                 parent ~= testsuite;
+                // to tell a testsuite ends
+                parent ~= ",,,,,,\"\"\n";
             }
         }
     }
@@ -253,6 +255,92 @@ public:
     }
     void print() {
         generate(suite.getTests(), context);
+        import std.file;
+
+        write(filename, context);
+    }
+}
+
+class HtmlReport {
+private:
+    TestSuite suite;
+    string filename;
+    string context
+                = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`
+                    ~ `<title></title></head><body>`
+                    ~ `<table style="text-align: center;"><tr><th>type</th>`
+                    ~ `<th>time</th><th>classname</th><th>name</th>`
+                    ~ `<th>failureMessage</th><th>errorMessage</th>`
+                    ~ `<th>errorContent</th>`;
+
+    void generate(Test[] tests, ref string parent) {
+        foreach (test; tests) {
+            TestResult result = test.getResult();
+
+            if (result !is null) {
+                // not a testsuite
+                foreach (name; result.getCases()) {
+                    string testcase = "<tr><td>testcase</td>";
+
+                    testcase ~= "<td>%.3f</td>".format(
+                            result.getTime(name).total!"msecs" / 1000.0);
+                    testcase ~= "<td>%s</td>".format(result.getClass);
+                    testcase ~= "<td>%s</td>".format(name);
+                    if (result.getFailure(name) !is null) {
+                        string failureMsg = result.getFailure(name).toString();
+                        size_t index = indexOf(failureMsg, '-');
+
+                        testcase ~= `<td>%s</td>`
+                                            .format(failureMsg[0..index-1]);
+                    } else {
+                        testcase ~= "<td></td>";
+                    }
+                    if (result.getError(name) !is null) {
+                        Throwable error = result.getError(name);
+                        string errorMsg = error.toString();
+                        size_t index = indexOf(errorMsg, '-');
+
+                        testcase ~= `<td>%s:%s</td>`
+                                        .format(errorMsg[0..index-1], error.msg);
+                        testcase ~= `<td>%s</td></tr>`.format(
+                                error.info.toString.replace("\n", ";"));
+                    } else {
+                        testcase ~= "<td></td></tr>";
+                    }
+                    parent ~= testcase;
+                }
+            } else {
+                // it's a testsuite
+                string testsuite = "<tr><td>testsuite</td>";
+                string suiteName = (cast(TestSuite)test).getName();
+
+                if (suiteName !is null) {
+                    testsuite ~= "<td>%s</td>".format("%.3f"
+                            .format((cast(TestSuite)test).getTime()
+                                                .total!"msecs" / 1000.0));
+                } else {
+                    testsuite ~= "<td></td>";
+                }
+                testsuite ~= "<td></td>";
+                testsuite ~= "<td>%s</td>".format(suiteName);
+                testsuite ~= "<td></td><td></td>";
+                testsuite ~= "<td></td></tr>";
+                generate((cast(TestSuite)test).getTests(), testsuite);
+                parent ~= testsuite;
+                // to tell a testsuite ends
+                parent ~= "<tr></tr>";
+            }
+        }
+    }
+public:
+    this(string filename, TestSuite suite) {
+        this.filename = filename;
+        this.suite = suite;
+    }
+
+    void print() {
+        generate(suite.getTests(), context);
+        context ~= "</body></html>";
         import std.file;
 
         write(filename, context);
