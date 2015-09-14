@@ -41,7 +41,7 @@ public:
 
     void addTestSuite(T : TestCase)() {
         foreach (test; tests) {
-            if (test.getResult().getClass().name == typeid(T).name) {
+            if (test.getResult().getClass() == typeid(T).name) {
                 return;
             }
         }

@@ -2,6 +2,10 @@ module dunit.testresult;
 
 import core.time;
 
+debug {
+    import std.stdio;
+}
+
 class TestResult {
 private:
     Throwable[string] failureTests;
@@ -14,7 +18,6 @@ private:
     string sign;
 
     void setNameAndTime(string name, Duration time) {
-        caseNames ~= name;
         elapsedTime[name] = time;
         totalTime += time;
     }
@@ -24,12 +27,14 @@ public:
     }
 
     void addTest(string test, Duration time = 0.msecs) {
+        caseNames ~= test;
         string name = testClass.name ~ "." ~ test;
 
         setNameAndTime(name, time);
         sign ~= ".";
     }
     void addError(string error, Throwable e, Duration time = 0.msecs) {
+        caseNames ~= error;
         string name = testClass.name ~ "." ~ error;
 
         setNameAndTime(name, time);
@@ -37,6 +42,7 @@ public:
         sign ~= "E";
     }
     void addFailure(string failure, Throwable e, Duration time = 0.msecs) {
+        caseNames ~= failure;
         string name = testClass.name ~ "." ~ failure;
 
         setNameAndTime(name, time);
@@ -48,11 +54,13 @@ public:
         string name = testClass.name ~ "." ~ caseName;
 
         totalTime -= elapsedTime[name];
-        elapsedTime[caseName] = time;
+        elapsedTime[name] = time;
         totalTime += time;
     }
     Duration getTime(string caseName) {
-        return elapsedTime[caseName];
+        string name = testClass.name ~ "." ~ caseName;
+
+        return elapsedTime[name];
     }
     Duration getTotalTime() {
         return totalTime;
@@ -69,8 +77,25 @@ public:
     Throwable[string] getErrors() {
         return errorTests;
     }
-    TypeInfo_Class getClass() {
-        return testClass;
+    Throwable getError(string error) {
+        error = testClass.name ~ "." ~ error;
+        if (error !in errorTests) {
+            return null;
+        }
+        return errorTests[error];
+    }
+    Throwable getFailure(string failure) {
+        failure = testClass.name ~ "." ~ failure;
+        if (failure !in failureTests) {
+            return null;
+        }
+        return failureTests[failure];
+    }
+    string getClass() {
+        return testClass.name;
+    }
+    string[] getCases() {
+        return caseNames;
     }
 }
 

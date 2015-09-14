@@ -11,24 +11,23 @@ import std.stdio;
 
 class TestRunner {
 private:
-    static void print(string[string] reports, Test[] tests) {
-        bool print = true;
+    static void print(string[string] reports, TestSuite suite) {
+        Test[] tests = suite.getTests();
 
         if (reports["xml"] !is null) {
-            /* XmlReport.print(results, reports["xml"]); */
-            print = false;
+            XmlReport report = new XmlReport(reports["xml"], suite.getName());
+
+            report.print(tests);
         }
         if (reports["csv"] !is null) {
             /* CsvReport.print(results, reports["csv"]); */
-            print = false;
         }
         if (reports["html"] !is null) {
             /* HtmlReport.print(results, reports["html"]); */
-            print = false;
         }
-        if (print) {
-            TestReport.print(tests);
-        }
+        TestReport report = new TestReport();
+
+        report.print(tests);
     }
 
     static string[string] dowithParameters(string[] args) {
@@ -59,18 +58,16 @@ public:
     static void run(TestSuite suite, string[] args = null) {
         string[string] reports = dowithParameters(args);
 
-        if (reports == null) {
+        if (reports is null) {
             return;
         }
-        Test[] tests = suite.getTests();
-
-        print(reports, tests);
+        print(reports, suite);
     }
 
     static void run(T : TestCase)(string[] args = null) {
         string[string] reports = dowithParameters(args);
 
-        if (reports == null) {
+        if (reports is null) {
             return;
         }
         TestSuite suite = new TestSuite();
