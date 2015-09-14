@@ -15,19 +15,21 @@ private:
         Test[] tests = suite.getTests();
 
         if (reports["xml"] !is null) {
-            XmlReport report = new XmlReport(reports["xml"], suite.getName());
+            XmlReport report = new XmlReport(reports["xml"], suite);
 
-            report.print(tests);
+            report.print();
         }
         if (reports["csv"] !is null) {
-            /* CsvReport.print(results, reports["csv"]); */
+            CsvReport report = new CsvReport(reports["csv"], suite);
+
+            report.print();
         }
         if (reports["html"] !is null) {
             /* HtmlReport.print(results, reports["html"]); */
         }
-        TestReport report = new TestReport();
+        TestReport report = new TestReport(suite);
 
-        report.print(tests);
+        report.print();
     }
 
     static string[string] dowithParameters(string[] args) {

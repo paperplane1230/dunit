@@ -28,7 +28,7 @@ public:
 
 class TestReport {
 private:
-    Duration elapsedTime;
+    TestSuite suite;
     Report[] errors;
     Report[] failures;
 
@@ -73,12 +73,15 @@ private:
             failures ~= new Report(str, e);
         }
         sum += result.getSum();
-        elapsedTime += result.getTotalTime();
         resultStr ~= result.getSign();
     }
 public:
-    void print(Test[] tests) {
-        foreach (test; tests) {
+    this(TestSuite suite) {
+        this.suite = suite;
+    }
+
+    void print() {
+        foreach (test; suite.getTests()) {
             getResults(test);
         }
         writeln(resultStr);
@@ -91,7 +94,7 @@ public:
         writeln("");
         writefln("Test(s) run: %d, failure(s): %d, error(s): %d.",
                 sum, failures.length, errors.length);
-        writeln("Time: ", elapsedTime, "\n");
+        writeln("Time: ", suite.getTime(), "\n");
         string res = (errors.length == 0 && failures.length == 0)
                     ? "Ok!!" : "Not ok!!";
 
@@ -103,6 +106,7 @@ class XmlReport {
     import std.xml;
 private:
     Document document;
+    TestSuite suite;
     string filename;
 
     void generate(Test[] tests, Element parent) {
@@ -152,19 +156,106 @@ private:
         }
     }
 public:
-    this(string filename, string suiteName) {
+    this(string filename, TestSuite suite) {
         this.filename = filename;
         document = new Document(new Tag("testsuites"));
-        if (suiteName !is null) {
-            document.tag.attr["name"] = suiteName;
+        this.suite = suite;
+        if (suite.getName() !is null) {
+            document.tag.attr["name"] = suite.getName();
         }
     }
 
-    void print(Test[] tests) {
-        generate(tests, document);
+    void print() {
+        generate(suite.getTests(), document);
         import std.file;
 
         write(filename, document.toString());
+    }
+}
+
+class CsvReport {
+private:
+    TestSuite suite;
+    string context
+        = "type,time,classname,name,failureMessage,errorMessage,errorContent\n";
+    string filename;
+
+    void generate(Test[] tests, ref string parent) {
+        foreach (test; tests) {
+            TestResult result = test.getResult();
+
+            if (result !is null) {
+                // not a testsuite
+                foreach (name; result.getCases()) {
+                    string testcase = "testcase,";
+
+                    testcase ~= "%.3f,".format(
+                            result.getTime(name).total!"msecs" / 1000.0);
+                    testcase ~= "%s,".format(result.getClass);
+                    testcase ~= "%s,".format(name);
+                    if (result.getFailure(name) !is null) {
+                        string failureMsg = result.getFailure(name).toString();
+                        size_t index = indexOf(failureMsg, '-');
+
+                        testcase ~= "\"%s\",".format(failureMsg[0..index-1]);
+                    } else {
+                        testcase ~= ",";
+                    }
+                    if (result.getError(name) !is null) {
+                        Throwable error = result.getError(name);
+                        string errorMsg = error.toString();
+                        size_t index = indexOf(errorMsg, '-');
+
+                        testcase ~= "\"%s:%s\",".format(errorMsg[0..index-1],
+                                                error.msg);
+                        testcase ~= "\"%s\"\n".format(
+                                error.info.toString.replace("\n", ";"));
+                    } else {
+                        testcase ~= ",\"\"\n";
+                    }
+                    parent ~= testcase;
+                }
+            } else {
+                // it's a testsuite
+                string testsuite = "testsuite,";
+                string suiteName = (cast(TestSuite)test).getName();
+
+                if (suiteName !is null) {
+                    testsuite ~= "%s,".format("%.3f"
+                            .format((cast(TestSuite)test).getTime()
+                                                .total!"msecs" / 1000.0));
+                } else {
+                    testsuite ~= ",";
+                }
+                testsuite ~= ",";
+                testsuite ~= "%s,".format(suiteName);
+                testsuite ~= ",,";
+                testsuite ~= "\"\"\n";
+                generate((cast(TestSuite)test).getTests(), testsuite);
+                parent ~= testsuite;
+            }
+        }
+    }
+public:
+    this(string filename, TestSuite suite) {
+        this.filename = filename;
+        this.suite = suite;
+        string context;
+
+        if (suite.getName() !is null) {
+            context = "testsuite,%s,,%s,,,\"\"\n"
+                .format("%.3f".format(suite.getTime().total!"msecs" / 1000.0),
+                        suite.getName());
+        } else {
+            context = "testsuite,,,%s,,,\"\"\n"
+                .format("%.3f".format(suite.getTime().total!"msecs" / 1000.0));
+        }
+    }
+    void print() {
+        generate(suite.getTests(), context);
+        import std.file;
+
+        write(filename, context);
     }
 }
 

@@ -4,6 +4,8 @@ import dunit.test;
 import dunit.testcase;
 import dunit.testresult;
 
+import core.time;
+
 debug {
     import std.stdio;
 }
@@ -49,6 +51,22 @@ public:
 
         test.run!T();
         tests ~= test;
+    }
+    Duration getTime() {
+        Duration time;
+
+        foreach (test; tests) {
+            TestResult result = test.getResult();
+
+            if (result !is null) {
+                // it's a testcase
+                time += result.getTotalTime();
+            } else {
+                // its' a testsuite
+                time += (cast(TestSuite)test).getTime();
+            }
+        }
+        return time;
     }
 }
 
